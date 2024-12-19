@@ -52,22 +52,20 @@
     html_logo_url = "https://github.com/jnqnfe/pulse-binding-rust/raw/master/logo.svg",
     html_favicon_url = "https://github.com/jnqnfe/pulse-binding-rust/raw/master/favicon.ico"
 )]
-
 #![warn(missing_docs)]
-
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
 extern crate libpulse_binding as pulse;
 extern crate libpulse_mainloop_glib_sys as capi;
 
-use std::rc::Rc;
-use std::ptr::null_mut;
+use glib::{translate::ToGlibPtr, MainContext};
 use glib_sys::GMainContext;
-use glib::{MainContext, translate::ToGlibPtr};
-use std::mem;
-use pulse::mainloop::api::{MainloopInternalType, MainloopInner, MainloopInnerType, MainloopApi};
-use pulse::mainloop::signal::MainloopSignals;
 use pulse::mainloop::api::Mainloop as MainloopTrait;
+use pulse::mainloop::api::{MainloopApi, MainloopInner, MainloopInnerType, MainloopInternalType};
+use pulse::mainloop::signal::MainloopSignals;
+use std::mem;
+use std::ptr::null_mut;
+use std::rc::Rc;
 
 /* Note, we cannot simply use the object defined in the ‘sys’ crate, since either the type or the
  * trait need to be defined locally in order to link them. Thus, we create the below type (an empty
@@ -75,7 +73,10 @@ use pulse::mainloop::api::Mainloop as MainloopTrait;
  */
 
 /// An opaque GLIB main loop object.
-#[repr(C)] pub struct MainloopInternal { _private: [u8; 0] }
+#[repr(C)]
+pub struct MainloopInternal {
+    _private: [u8; 0],
+}
 
 impl MainloopInternalType for MainloopInternal {}
 
@@ -123,13 +124,13 @@ impl Mainloop {
         if ptr.is_null() {
             return None;
         }
-        let api_ptr = unsafe {
-            mem::transmute(capi::pa_glib_mainloop_get_api(ptr))
-        };
+        let api_ptr = unsafe { mem::transmute(capi::pa_glib_mainloop_get_api(ptr)) };
         let ml_inner = unsafe {
             MainloopInner::<MainloopInternal>::new(mem::transmute(ptr), api_ptr, drop_actual, false)
         };
-        Some(Self { _inner: Rc::new(ml_inner) })
+        Some(Self {
+            _inner: Rc::new(ml_inner),
+        })
     }
 
     /// Gets the abstract main loop abstraction layer vtable for this main loop.
@@ -145,4 +146,9 @@ impl Mainloop {
         assert_eq!(false, ptr.is_null());
         unsafe { &*ptr }
     }
+}
+
+/// Initializes the underlying FFI library, call it multiple times is safe.
+pub fn init_sys() -> Result<(), Box<dyn std::error::Error>> {
+    libpulse_mainloop_glib_sys::ffi::init()
 }

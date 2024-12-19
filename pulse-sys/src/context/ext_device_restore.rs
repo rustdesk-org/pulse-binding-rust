@@ -13,9 +13,9 @@
 
 //! Routines for controlling module-device-restore.
 
-use std::os::raw::c_void;
 use super::{pa_context, pa_context_success_cb_t};
-use crate::{operation::pa_operation, def::pa_device_type_t, format::pa_format_info};
+use crate::{def::pa_device_type_t, format::pa_format_info, operation::pa_operation};
+use std::os::raw::c_void;
 
 #[repr(C)]
 pub struct pa_ext_device_restore_info {
@@ -34,13 +34,81 @@ pub type pa_ext_device_restore_subscribe_cb_t = Option<extern "C" fn(c: *mut pa_
 #[rustfmt::skip]
 pub type pa_ext_device_restore_read_device_formats_cb_t = Option<extern "C" fn(c: *mut pa_context, info: *const pa_ext_device_restore_info, eol: i32, userdata: *mut c_void)>;
 
-#[rustfmt::skip]
-#[link(name = "pulse")]
-extern "C" {
-    pub fn pa_ext_device_restore_test(c: *mut pa_context, cb: pa_ext_device_restore_test_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_ext_device_restore_subscribe(c: *mut pa_context, enable: i32, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_ext_device_restore_set_subscribe_cb(c: *mut pa_context, cb: pa_ext_device_restore_subscribe_cb_t, userdata: *mut c_void);
-    pub fn pa_ext_device_restore_read_formats_all(c: *mut pa_context, cb: pa_ext_device_restore_read_device_formats_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_ext_device_restore_read_formats(c: *mut pa_context, type_: pa_device_type_t, idx: u32, cb: pa_ext_device_restore_read_device_formats_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_ext_device_restore_save_formats(c: *mut pa_context, type_: pa_device_type_t, idx: u32, n_formats: u8, formats: *const *mut pa_format_info, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
+pub unsafe fn pa_ext_device_restore_test(
+    c: *mut pa_context,
+    cb: pa_ext_device_restore_test_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = crate::ffi::get_functions() {
+        (functions.pa_ext_device_restore_test)(c, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_ext_device_restore_subscribe(
+    c: *mut pa_context,
+    enable: i32,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = crate::ffi::get_functions() {
+        (functions.pa_ext_device_restore_subscribe)(c, enable, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_ext_device_restore_set_subscribe_cb(
+    c: *mut pa_context,
+    cb: pa_ext_device_restore_subscribe_cb_t,
+    userdata: *mut c_void,
+) {
+    if let Some(functions) = crate::ffi::get_functions() {
+        (functions.pa_ext_device_restore_set_subscribe_cb)(c, cb, userdata)
+    }
+}
+
+pub unsafe fn pa_ext_device_restore_read_formats_all(
+    c: *mut pa_context,
+    cb: pa_ext_device_restore_read_device_formats_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = crate::ffi::get_functions() {
+        (functions.pa_ext_device_restore_read_formats_all)(c, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_ext_device_restore_read_formats(
+    c: *mut pa_context,
+    type_: pa_device_type_t,
+    idx: u32,
+    cb: pa_ext_device_restore_read_device_formats_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = crate::ffi::get_functions() {
+        (functions.pa_ext_device_restore_read_formats)(c, type_, idx, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_ext_device_restore_save_formats(
+    c: *mut pa_context,
+    type_: pa_device_type_t,
+    idx: u32,
+    n_formats: u8,
+    formats: *const *mut pa_format_info,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = crate::ffi::get_functions() {
+        (functions.pa_ext_device_restore_save_formats)(
+            c, type_, idx, n_formats, formats, cb, userdata,
+        )
+    } else {
+        std::ptr::null_mut()
+    }
 }

@@ -13,8 +13,9 @@
 
 //! Main loop abstraction layer API.
 
-use std::os::raw::c_void;
+use crate::ffi;
 use crate::timeval::timeval;
+use std::os::raw::c_void;
 
 pub type pa_io_event_flags_t = u32;
 
@@ -23,22 +24,28 @@ pub use self::io_event_flags::*;
 pub mod io_event_flags {
     use super::pa_io_event_flags_t;
 
-    pub const PA_IO_EVENT_NULL:   pa_io_event_flags_t = 0;
-    pub const PA_IO_EVENT_INPUT:  pa_io_event_flags_t = 1;
+    pub const PA_IO_EVENT_NULL: pa_io_event_flags_t = 0;
+    pub const PA_IO_EVENT_INPUT: pa_io_event_flags_t = 1;
     pub const PA_IO_EVENT_OUTPUT: pa_io_event_flags_t = 2;
     pub const PA_IO_EVENT_HANGUP: pa_io_event_flags_t = 4;
-    pub const PA_IO_EVENT_ERROR:  pa_io_event_flags_t = 8;
+    pub const PA_IO_EVENT_ERROR: pa_io_event_flags_t = 8;
 }
 
 /// An opaque IO event source object.
-#[repr(C)] pub struct pa_io_event { _private: [u8; 0] }
+#[repr(C)]
+pub struct pa_io_event {
+    _private: [u8; 0],
+}
 #[rustfmt::skip]
 pub type pa_io_event_cb_t = Option<extern "C" fn(a: *const pa_mainloop_api, e: *mut pa_io_event, fd: i32, events: pa_io_event_flags_t, userdata: *mut c_void)>;
 #[rustfmt::skip]
 pub type pa_io_event_destroy_cb_t = Option<extern "C" fn(a: *const pa_mainloop_api, e: *mut pa_io_event, userdata: *mut c_void)>;
 
 /// An opaque timer event source object.
-#[repr(C)] pub struct pa_time_event { _private: [u8; 0] }
+#[repr(C)]
+pub struct pa_time_event {
+    _private: [u8; 0],
+}
 #[rustfmt::skip]
 pub type pa_time_event_cb_t = Option<extern "C" fn(a: *const pa_mainloop_api, e: *mut pa_time_event, tv: *const timeval, userdata: *mut c_void)>;
 #[rustfmt::skip]
@@ -47,7 +54,10 @@ pub type pa_time_event_destroy_cb_t = Option<extern "C" fn(a: *const pa_mainloop
 /// An opaque deferred event source object.
 ///
 /// Events of this type are triggered once in every main loop iteration.
-#[repr(C)] pub struct pa_defer_event { _private: [u8; 0] }
+#[repr(C)]
+pub struct pa_defer_event {
+    _private: [u8; 0],
+}
 #[rustfmt::skip]
 pub type pa_defer_event_cb_t = Option<extern "C" fn(a: *const pa_mainloop_api, e: *mut pa_defer_event, userdata: *mut c_void)>;
 #[rustfmt::skip]
@@ -79,8 +89,12 @@ pub struct pa_mainloop_api {
 #[rustfmt::skip]
 pub type pa_mainloop_api_once_cb = Option<extern "C" fn(m: *const pa_mainloop_api, userdata: *mut c_void)>;
 
-#[rustfmt::skip]
-#[link(name = "pulse")]
-extern "C" {
-    pub fn pa_mainloop_api_once(m: *const pa_mainloop_api, callback: pa_mainloop_api_once_cb, userdata: *mut c_void);
+pub unsafe fn pa_mainloop_api_once(
+    m: *const pa_mainloop_api,
+    callback: pa_mainloop_api_once_cb,
+    userdata: *mut c_void,
+) {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_mainloop_api_once)(m, callback, userdata)
+    }
 }

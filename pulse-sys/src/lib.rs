@@ -29,9 +29,7 @@
     html_logo_url = "https://github.com/jnqnfe/pulse-binding-rust/raw/master/logo.svg",
     html_favicon_url = "https://github.com/jnqnfe/pulse-binding-rust/raw/master/favicon.ico"
 )]
-
 #![allow(non_camel_case_types, non_snake_case)]
-
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
 pub mod channelmap;
@@ -39,6 +37,7 @@ pub mod context;
 pub mod def;
 pub mod direction;
 pub mod error;
+pub mod ffi;
 pub mod format;
 pub mod mainloop;
 pub mod operation;

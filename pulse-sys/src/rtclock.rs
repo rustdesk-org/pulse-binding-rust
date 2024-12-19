@@ -13,7 +13,13 @@
 
 //! Monotonic clock utilities.
 
-#[link(name = "pulse")]
-extern "C" {
-    pub fn pa_rtclock_now() -> crate::sample::pa_usec_t;
+use crate::ffi;
+use crate::sample::pa_usec_t;
+
+pub unsafe fn pa_rtclock_now() -> pa_usec_t {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_rtclock_now)()
+    } else {
+        0
+    }
 }
