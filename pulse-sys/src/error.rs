@@ -13,9 +13,8 @@
 
 //! Error management.
 
-use crate::ffi;
-use num_derive::{FromPrimitive, ToPrimitive};
 use std::os::raw::c_char;
+use num_derive::{FromPrimitive, ToPrimitive};
 
 /// Error code.
 ///
@@ -24,7 +23,8 @@ use std::os::raw::c_char;
 /// i.e. the `Invalid` variant here has a value of `3`, while functions returning this error code
 /// return `-3`. (This is identical to the enum provided in the PA C API).
 #[repr(C)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(FromPrimitive, ToPrimitive)]
 #[allow(non_camel_case_types)]
 pub enum pa_error_code_t {
     /// No error.
@@ -78,38 +78,35 @@ pub enum pa_error_code_t {
 
 pub const PA_ERR_MAX: usize = 27;
 
-pub const PA_OK: pa_error_code_t = pa_error_code_t::Ok;
-pub const PA_ERR_ACCESS: pa_error_code_t = pa_error_code_t::Access;
-pub const PA_ERR_COMMAND: pa_error_code_t = pa_error_code_t::Command;
-pub const PA_ERR_INVALID: pa_error_code_t = pa_error_code_t::Invalid;
-pub const PA_ERR_EXIST: pa_error_code_t = pa_error_code_t::Exist;
-pub const PA_ERR_NOENTITY: pa_error_code_t = pa_error_code_t::NoEntity;
-pub const PA_ERR_CONNECTIONREFUSED: pa_error_code_t = pa_error_code_t::ConnectionRefused;
-pub const PA_ERR_PROTOCOL: pa_error_code_t = pa_error_code_t::Protocol;
-pub const PA_ERR_TIMEOUT: pa_error_code_t = pa_error_code_t::Timeout;
-pub const PA_ERR_AUTHKEY: pa_error_code_t = pa_error_code_t::AuthKey;
-pub const PA_ERR_INTERNAL: pa_error_code_t = pa_error_code_t::Internal;
+pub const PA_OK:                       pa_error_code_t = pa_error_code_t::Ok;
+pub const PA_ERR_ACCESS:               pa_error_code_t = pa_error_code_t::Access;
+pub const PA_ERR_COMMAND:              pa_error_code_t = pa_error_code_t::Command;
+pub const PA_ERR_INVALID:              pa_error_code_t = pa_error_code_t::Invalid;
+pub const PA_ERR_EXIST:                pa_error_code_t = pa_error_code_t::Exist;
+pub const PA_ERR_NOENTITY:             pa_error_code_t = pa_error_code_t::NoEntity;
+pub const PA_ERR_CONNECTIONREFUSED:    pa_error_code_t = pa_error_code_t::ConnectionRefused;
+pub const PA_ERR_PROTOCOL:             pa_error_code_t = pa_error_code_t::Protocol;
+pub const PA_ERR_TIMEOUT:              pa_error_code_t = pa_error_code_t::Timeout;
+pub const PA_ERR_AUTHKEY:              pa_error_code_t = pa_error_code_t::AuthKey;
+pub const PA_ERR_INTERNAL:             pa_error_code_t = pa_error_code_t::Internal;
 pub const PA_ERR_CONNECTIONTERMINATED: pa_error_code_t = pa_error_code_t::ConnectionTerminated;
-pub const PA_ERR_KILLED: pa_error_code_t = pa_error_code_t::Killed;
-pub const PA_ERR_INVALIDSERVER: pa_error_code_t = pa_error_code_t::InvalidServer;
-pub const PA_ERR_MODINITFAILED: pa_error_code_t = pa_error_code_t::ModInitFailed;
-pub const PA_ERR_BADSTATE: pa_error_code_t = pa_error_code_t::BadState;
-pub const PA_ERR_NODATA: pa_error_code_t = pa_error_code_t::NoData;
-pub const PA_ERR_VERSION: pa_error_code_t = pa_error_code_t::Version;
-pub const PA_ERR_TOOLARGE: pa_error_code_t = pa_error_code_t::TooLarge;
-pub const PA_ERR_NOTSUPPORTED: pa_error_code_t = pa_error_code_t::NotSupported;
-pub const PA_ERR_UNKNOWN: pa_error_code_t = pa_error_code_t::Unknown;
-pub const PA_ERR_NOEXTENSION: pa_error_code_t = pa_error_code_t::NoExtension;
-pub const PA_ERR_OBSOLETE: pa_error_code_t = pa_error_code_t::Obsolete;
-pub const PA_ERR_NOTIMPLEMENTED: pa_error_code_t = pa_error_code_t::NotImplemented;
-pub const PA_ERR_FORKED: pa_error_code_t = pa_error_code_t::Forked;
-pub const PA_ERR_IO: pa_error_code_t = pa_error_code_t::IO;
-pub const PA_ERR_BUSY: pa_error_code_t = pa_error_code_t::Busy;
+pub const PA_ERR_KILLED:               pa_error_code_t = pa_error_code_t::Killed;
+pub const PA_ERR_INVALIDSERVER:        pa_error_code_t = pa_error_code_t::InvalidServer;
+pub const PA_ERR_MODINITFAILED:        pa_error_code_t = pa_error_code_t::ModInitFailed;
+pub const PA_ERR_BADSTATE:             pa_error_code_t = pa_error_code_t::BadState;
+pub const PA_ERR_NODATA:               pa_error_code_t = pa_error_code_t::NoData;
+pub const PA_ERR_VERSION:              pa_error_code_t = pa_error_code_t::Version;
+pub const PA_ERR_TOOLARGE:             pa_error_code_t = pa_error_code_t::TooLarge;
+pub const PA_ERR_NOTSUPPORTED:         pa_error_code_t = pa_error_code_t::NotSupported;
+pub const PA_ERR_UNKNOWN:              pa_error_code_t = pa_error_code_t::Unknown;
+pub const PA_ERR_NOEXTENSION:          pa_error_code_t = pa_error_code_t::NoExtension;
+pub const PA_ERR_OBSOLETE:             pa_error_code_t = pa_error_code_t::Obsolete;
+pub const PA_ERR_NOTIMPLEMENTED:       pa_error_code_t = pa_error_code_t::NotImplemented;
+pub const PA_ERR_FORKED:               pa_error_code_t = pa_error_code_t::Forked;
+pub const PA_ERR_IO:                   pa_error_code_t = pa_error_code_t::IO;
+pub const PA_ERR_BUSY:                 pa_error_code_t = pa_error_code_t::Busy;
 
-pub unsafe fn pa_strerror(error: i32) -> *const c_char {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_strerror)(error)
-    } else {
-        std::ptr::null()
-    }
+#[link(name = "pulse")]
+extern "C" {
+    pub fn pa_strerror(error: i32) -> *const c_char;
 }

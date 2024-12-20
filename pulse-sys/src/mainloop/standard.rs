@@ -13,111 +13,33 @@
 
 //! Standard/minimal main loop implementation based on poll().
 
-use crate::{ffi, mainloop::api::pa_mainloop_api};
+use std::os::raw::{c_ulong, c_void};
 #[cfg(not(windows))]
 use libc::pollfd;
-use std::os::raw::{c_ulong, c_void};
 #[cfg(windows)]
 use winapi::um::winsock2::WSAPOLLFD as pollfd;
+use crate::mainloop::api::pa_mainloop_api;
 
 /// An opaque main loop object.
-#[repr(C)]
-pub struct pa_mainloop {
-    _private: [u8; 0],
-}
+#[repr(C)] pub struct pa_mainloop { _private: [u8; 0] }
 
-pub type pa_poll_func = Option<
-    extern "C" fn(ufds: *mut pollfd, nfds: c_ulong, timeout: i32, userdata: *mut c_void) -> i32,
->;
+#[rustfmt::skip]
+pub type pa_poll_func = Option<extern "C" fn(ufds: *mut pollfd, nfds: c_ulong, timeout: i32, userdata: *mut c_void) -> i32>;
 
-pub unsafe fn pa_mainloop_new() -> *mut pa_mainloop {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_mainloop_new)()
-    } else {
-        std::ptr::null_mut()
-    }
-}
+#[rustfmt::skip]
+#[link(name = "pulse")]
+extern "C" {
+    pub fn pa_mainloop_new() -> *mut pa_mainloop;
+    pub fn pa_mainloop_free(m: *mut pa_mainloop);
+    pub fn pa_mainloop_prepare(m: *mut pa_mainloop, timeout: i32) -> i32;
+    pub fn pa_mainloop_poll(m: *mut pa_mainloop) -> i32;
+    pub fn pa_mainloop_dispatch(m: *mut pa_mainloop) -> i32;
+    pub fn pa_mainloop_get_retval(m: *const pa_mainloop) -> i32;
+    pub fn pa_mainloop_iterate(m: *mut pa_mainloop, block: i32, retval: *mut i32) -> i32;
+    pub fn pa_mainloop_run(m: *mut pa_mainloop, retval: *mut i32) -> i32;
+    pub fn pa_mainloop_get_api(m: *const pa_mainloop) -> *const pa_mainloop_api;
+    pub fn pa_mainloop_quit(m: *mut pa_mainloop, retval: i32);
+    pub fn pa_mainloop_wakeup(m: *mut pa_mainloop);
 
-pub unsafe fn pa_mainloop_free(m: *mut pa_mainloop) {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_mainloop_free)(m)
-    }
-}
-
-pub unsafe fn pa_mainloop_prepare(m: *mut pa_mainloop, timeout: i32) -> i32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_mainloop_prepare)(m, timeout)
-    } else {
-        -1
-    }
-}
-
-pub unsafe fn pa_mainloop_poll(m: *mut pa_mainloop) -> i32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_mainloop_poll)(m)
-    } else {
-        -1
-    }
-}
-
-pub unsafe fn pa_mainloop_dispatch(m: *mut pa_mainloop) -> i32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_mainloop_dispatch)(m)
-    } else {
-        -1
-    }
-}
-
-pub unsafe fn pa_mainloop_get_retval(m: *const pa_mainloop) -> i32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_mainloop_get_retval)(m)
-    } else {
-        -1
-    }
-}
-
-pub unsafe fn pa_mainloop_iterate(m: *mut pa_mainloop, block: i32, retval: *mut i32) -> i32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_mainloop_iterate)(m, block, retval)
-    } else {
-        -1
-    }
-}
-
-pub unsafe fn pa_mainloop_run(m: *mut pa_mainloop, retval: *mut i32) -> i32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_mainloop_run)(m, retval)
-    } else {
-        -1
-    }
-}
-
-pub unsafe fn pa_mainloop_get_api(m: *const pa_mainloop) -> *const pa_mainloop_api {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_mainloop_get_api)(m)
-    } else {
-        std::ptr::null()
-    }
-}
-
-pub unsafe fn pa_mainloop_quit(m: *mut pa_mainloop, retval: i32) {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_mainloop_quit)(m, retval)
-    }
-}
-
-pub unsafe fn pa_mainloop_wakeup(m: *mut pa_mainloop) {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_mainloop_wakeup)(m)
-    }
-}
-
-pub unsafe fn pa_mainloop_set_poll_func(
-    m: *mut pa_mainloop,
-    poll_func: pa_poll_func,
-    userdata: *mut c_void,
-) {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_mainloop_set_poll_func)(m, poll_func, userdata)
-    }
+    pub fn pa_mainloop_set_poll_func(m: *mut pa_mainloop, poll_func: pa_poll_func, userdata: *mut c_void);
 }

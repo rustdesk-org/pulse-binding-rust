@@ -30,40 +30,24 @@
     html_logo_url = "https://github.com/jnqnfe/pulse-binding-rust/raw/master/logo.svg",
     html_favicon_url = "https://github.com/jnqnfe/pulse-binding-rust/raw/master/favicon.ico"
 )]
+
 #![allow(non_camel_case_types, non_snake_case)]
+
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
-extern crate glib_sys as glib;
 extern crate libpulse_sys as pulse;
+extern crate glib_sys as glib;
 
-pub mod ffi;
-
+use glib::GMainContext;
 use pulse::mainloop::api::pa_mainloop_api;
 
 /// An opaque GLIB main loop object.
-#[repr(C)]
-pub struct pa_glib_mainloop {
-    _private: [u8; 0],
-}
+#[repr(C)] pub struct pa_glib_mainloop { _private: [u8; 0] }
 
-pub unsafe fn pa_glib_mainloop_new(c: *mut glib_sys::GMainContext) -> *mut pa_glib_mainloop {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_glib_mainloop_new)(c)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_glib_mainloop_free(g: *mut pa_glib_mainloop) {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_glib_mainloop_free)(g)
-    }
-}
-
-pub unsafe fn pa_glib_mainloop_get_api(g: *const pa_glib_mainloop) -> *const pa_mainloop_api {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_glib_mainloop_get_api)(g)
-    } else {
-        std::ptr::null()
-    }
+#[rustfmt::skip]
+#[link(name = "pulse-mainloop-glib")]
+extern "C" {
+    pub fn pa_glib_mainloop_new(c: *mut GMainContext) -> *mut pa_glib_mainloop;
+    pub fn pa_glib_mainloop_free(g: *mut pa_glib_mainloop);
+    pub fn pa_glib_mainloop_get_api(g: *const pa_glib_mainloop) -> *const pa_mainloop_api;
 }

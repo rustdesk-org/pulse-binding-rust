@@ -13,9 +13,8 @@
 
 //! Property list constants and functions.
 
-use crate::ffi;
-use num_derive::{FromPrimitive, ToPrimitive};
 use std::os::raw::{c_char, c_void};
+use num_derive::{FromPrimitive, ToPrimitive};
 
 /// For streams: localized media name, formatted as UTF-8. E.g. "Guns'N'Roses: Civil War".
 pub const PA_PROP_MEDIA_NAME: &str = "media.name";
@@ -312,14 +311,12 @@ pub const PA_PROP_BLUETOOTH_CODEC: &str = "bluetooth.codec";
 
 /// A property list object. Basically a dictionary with ASCII strings as keys and arbitrary data as
 /// values.
-#[repr(C)]
-pub struct pa_proplist {
-    _private: [u8; 0],
-}
+#[repr(C)] pub struct pa_proplist { _private: [u8; 0] }
 
 /// Update mode.
 #[repr(C)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(FromPrimitive, ToPrimitive)]
 pub enum pa_update_mode_t {
     /// Replace the entire property list with the new one. Don’t keep any of the old data around.
     Set,
@@ -333,199 +330,33 @@ pub enum pa_update_mode_t {
     Replace,
 }
 
-pub const PA_UPDATE_SET: pa_update_mode_t = pa_update_mode_t::Set;
-pub const PA_UPDATE_MERGE: pa_update_mode_t = pa_update_mode_t::Merge;
+pub const PA_UPDATE_SET:     pa_update_mode_t = pa_update_mode_t::Set;
+pub const PA_UPDATE_MERGE:   pa_update_mode_t = pa_update_mode_t::Merge;
 pub const PA_UPDATE_REPLACE: pa_update_mode_t = pa_update_mode_t::Replace;
 
-pub unsafe fn pa_proplist_new() -> *mut pa_proplist {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_proplist_new)()
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_proplist_free(p: *mut pa_proplist) {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_proplist_free)(p)
-    }
-}
-
-pub unsafe fn pa_proplist_key_valid(key: *const c_char) -> i32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_proplist_key_valid)(key)
-    } else {
-        0
-    }
-}
-
-pub unsafe fn pa_proplist_sets(
-    p: *mut pa_proplist,
-    key: *const c_char,
-    value: *const c_char,
-) -> i32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_proplist_sets)(p, key, value)
-    } else {
-        -1
-    }
-}
-
-pub unsafe fn pa_proplist_setp(p: *mut pa_proplist, pair: *const c_char) -> i32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_proplist_setp)(p, pair)
-    } else {
-        -1
-    }
-}
-
-// pub unsafe fn pa_proplist_setf(
-//     p: *mut pa_proplist,
-//     key: *const c_char,
-//     format: *const c_char,
-//     ...
-// ) -> i32 {
-//     if let Some(functions) = ffi::get_functions() {
-//         (functions.pa_proplist_setf)(p, key, format, ...)
-//     } else {
-//         -1
-//     }
-// }
-
-pub unsafe fn pa_proplist_set(
-    p: *mut pa_proplist,
-    key: *const c_char,
-    data: *const c_void,
-    nbytes: usize,
-) -> i32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_proplist_set)(p, key, data, nbytes)
-    } else {
-        -1
-    }
-}
-
-pub unsafe fn pa_proplist_gets(p: *const pa_proplist, key: *const c_char) -> *const c_char {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_proplist_gets)(p, key)
-    } else {
-        std::ptr::null()
-    }
-}
-
-pub unsafe fn pa_proplist_get(
-    p: *const pa_proplist,
-    key: *const c_char,
-    data: *mut *const c_void,
-    nbytes: *mut usize,
-) -> i32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_proplist_get)(p, key, data, nbytes)
-    } else {
-        -1
-    }
-}
-
-pub unsafe fn pa_proplist_update(
-    p: *mut pa_proplist,
-    mode: pa_update_mode_t,
-    other: *const pa_proplist,
-) {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_proplist_update)(p, mode, other)
-    }
-}
-
-pub unsafe fn pa_proplist_unset(p: *mut pa_proplist, key: *const c_char) -> i32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_proplist_unset)(p, key)
-    } else {
-        -1
-    }
-}
-
-pub unsafe fn pa_proplist_unset_many(p: *mut pa_proplist, keys: *const *const c_char) -> i32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_proplist_unset_many)(p, keys)
-    } else {
-        -1
-    }
-}
-
-pub unsafe fn pa_proplist_iterate(p: *const pa_proplist, state: *mut *mut c_void) -> *const c_char {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_proplist_iterate)(p, state)
-    } else {
-        std::ptr::null()
-    }
-}
-
-pub unsafe fn pa_proplist_to_string(p: *const pa_proplist) -> *mut c_char {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_proplist_to_string)(p)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_proplist_to_string_sep(p: *const pa_proplist, sep: *const c_char) -> *mut c_char {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_proplist_to_string_sep)(p, sep)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_proplist_from_string(s: *const c_char) -> *mut pa_proplist {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_proplist_from_string)(s)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_proplist_contains(p: *const pa_proplist, key: *const c_char) -> i32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_proplist_contains)(p, key)
-    } else {
-        0
-    }
-}
-
-pub unsafe fn pa_proplist_clear(p: *mut pa_proplist) {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_proplist_clear)(p)
-    }
-}
-
-pub unsafe fn pa_proplist_copy(p: *const pa_proplist) -> *mut pa_proplist {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_proplist_copy)(p)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_proplist_size(p: *const pa_proplist) -> u32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_proplist_size)(p)
-    } else {
-        0
-    }
-}
-
-pub unsafe fn pa_proplist_isempty(p: *const pa_proplist) -> i32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_proplist_isempty)(p)
-    } else {
-        0
-    }
-}
-
-pub unsafe fn pa_proplist_equal(a: *const pa_proplist, b: *const pa_proplist) -> i32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_proplist_equal)(a, b)
-    } else {
-        0
-    }
+#[rustfmt::skip]
+#[link(name = "pulse")]
+extern "C" {
+    pub fn pa_proplist_new() -> *mut pa_proplist;
+    pub fn pa_proplist_free(p: *mut pa_proplist);
+    pub fn pa_proplist_key_valid(key: *const c_char) -> i32;
+    pub fn pa_proplist_sets(p: *mut pa_proplist, key: *const c_char, value: *const c_char) -> i32;
+    pub fn pa_proplist_setp(p: *mut pa_proplist, pair: *const c_char) -> i32;
+    pub fn pa_proplist_setf(p: *mut pa_proplist, key: *const c_char, format: *const c_char, ...) -> i32;
+    pub fn pa_proplist_set(p: *mut pa_proplist, key: *const c_char, data: *const c_void, nbytes: usize) -> i32;
+    pub fn pa_proplist_gets(p: *const pa_proplist, key: *const c_char) -> *const c_char;
+    pub fn pa_proplist_get(p: *const pa_proplist, key: *const c_char, data: *mut *const c_void, nbytes: *mut usize) -> i32;
+    pub fn pa_proplist_update(p: *mut pa_proplist, mode: pa_update_mode_t, other: *const pa_proplist);
+    pub fn pa_proplist_unset(p: *mut pa_proplist, key: *const c_char) -> i32;
+    pub fn pa_proplist_unset_many(p: *mut pa_proplist, keys: *const *const c_char) -> i32;
+    pub fn pa_proplist_iterate(p: *const pa_proplist, state: *mut *mut c_void) -> *const c_char;
+    pub fn pa_proplist_to_string(p: *const pa_proplist) -> *mut c_char;
+    pub fn pa_proplist_to_string_sep(p: *const pa_proplist, sep: *const c_char) -> *mut c_char;
+    pub fn pa_proplist_from_string(s: *const c_char) -> *mut pa_proplist;
+    pub fn pa_proplist_contains(p: *const pa_proplist, key: *const c_char) -> i32;
+    pub fn pa_proplist_clear(p: *mut pa_proplist);
+    pub fn pa_proplist_copy(p: *const pa_proplist) -> *mut pa_proplist;
+    pub fn pa_proplist_size(p: *const pa_proplist) -> u32;
+    pub fn pa_proplist_isempty(p: *const pa_proplist) -> i32;
+    pub fn pa_proplist_equal(a: *const pa_proplist, b: *const pa_proplist) -> i32;
 }

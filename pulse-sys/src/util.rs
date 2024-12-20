@@ -13,71 +13,18 @@
 
 //! Assorted utility functions.
 
-use crate::ffi;
 use std::os::raw::{c_char, c_ulong};
 
-pub unsafe fn pa_get_user_name(s: *mut c_char, l: usize) -> *mut c_char {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_get_user_name)(s, l)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_get_host_name(s: *mut c_char, l: usize) -> *mut c_char {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_get_host_name)(s, l)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_get_fqdn(s: *mut c_char, l: usize) -> *mut c_char {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_get_fqdn)(s, l)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_get_home_dir(s: *mut c_char, l: usize) -> *mut c_char {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_get_home_dir)(s, l)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_get_binary_name(s: *mut c_char, l: usize) -> *mut c_char {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_get_binary_name)(s, l)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_path_get_filename(p: *const c_char) -> *mut c_char {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_path_get_filename)(p)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_msleep(t: c_ulong) -> i32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_msleep)(t)
-    } else {
-        -1
-    }
-}
-
-#[cfg(any(doc, feature = "pa_v13"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "pa_v13")))]
-pub unsafe fn pa_thread_make_realtime(rtprio: i32) -> i32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_thread_make_realtime)(rtprio)
-    } else {
-        -1
-    }
+#[link(name = "pulse")]
+extern "C" {
+    pub fn pa_get_user_name(s: *mut c_char, l: usize) -> *mut c_char;
+    pub fn pa_get_host_name(s: *mut c_char, l: usize) -> *mut c_char;
+    pub fn pa_get_fqdn(s: *mut c_char, l: usize) -> *mut c_char;
+    pub fn pa_get_home_dir(s: *mut c_char, l: usize) -> *mut c_char;
+    pub fn pa_get_binary_name(s: *mut c_char, l: usize) -> *mut c_char;
+    pub fn pa_path_get_filename(p: *const c_char) -> *mut c_char;
+    pub fn pa_msleep(t: c_ulong) -> i32;
+    #[cfg(any(doc, feature = "pa_v13"))]
+    #[cfg_attr(docsrs, doc(cfg(feature = "pa_v13")))]
+    pub fn pa_thread_make_realtime(rtprio: i32) -> i32;
 }

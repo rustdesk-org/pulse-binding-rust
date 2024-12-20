@@ -23,26 +23,14 @@ use std::os::raw::c_char;
 pub type pa_direction_t = i32;
 
 pub const PA_DIRECTION_OUTPUT: pa_direction_t = 0x1;
-pub const PA_DIRECTION_INPUT: pa_direction_t = 0x2;
+pub const PA_DIRECTION_INPUT:  pa_direction_t = 0x2;
 
-use crate::ffi;
-
-#[cfg(any(doc, feature = "pa_v6"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "pa_v6")))]
-pub unsafe fn pa_direction_valid(direction: pa_direction_t) -> i32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_direction_valid)(direction)
-    } else {
-        0
-    }
-}
-
-#[cfg(any(doc, feature = "pa_v6"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "pa_v6")))]
-pub unsafe fn pa_direction_to_string(direction: pa_direction_t) -> *const c_char {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_direction_to_string)(direction)
-    } else {
-        std::ptr::null()
-    }
+#[link(name = "pulse")]
+extern "C" {
+    #[cfg(any(doc, feature = "pa_v6"))]
+    #[cfg_attr(docsrs, doc(cfg(feature = "pa_v6")))]
+    pub fn pa_direction_valid(direction: pa_direction_t) -> i32;
+    #[cfg(any(doc, feature = "pa_v6"))]
+    #[cfg_attr(docsrs, doc(cfg(feature = "pa_v6")))]
+    pub fn pa_direction_to_string(direction: pa_direction_t) -> *const c_char;
 }

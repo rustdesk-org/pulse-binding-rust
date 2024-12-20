@@ -30,93 +30,26 @@
     html_logo_url = "https://github.com/jnqnfe/pulse-binding-rust/raw/master/logo.svg",
     html_favicon_url = "https://github.com/jnqnfe/pulse-binding-rust/raw/master/favicon.ico"
 )]
+
 #![allow(non_camel_case_types, non_snake_case)]
+
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
 extern crate libpulse_sys as pulse;
 
-pub mod ffi;
 use std::os::raw::{c_char, c_void};
 
 /// An opaque simple connection object.
-#[repr(C)]
-pub struct pa_simple {
-    _private: [u8; 0],
-}
+#[repr(C)] pub struct pa_simple { _private: [u8; 0] }
 
-pub unsafe fn pa_simple_new(
-    server: *const c_char,
-    name: *const c_char,
-    dir: pulse::stream::pa_stream_direction_t,
-    dev: *const c_char,
-    stream_name: *const c_char,
-    ss: *const pulse::sample::pa_sample_spec,
-    map: *const pulse::channelmap::pa_channel_map,
-    attr: *const pulse::def::pa_buffer_attr,
-    error: *mut i32,
-) -> *mut pa_simple {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_simple_new)(server, name, dir, dev, stream_name, ss, map, attr, error)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_simple_free(s: *mut pa_simple) {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_simple_free)(s)
-    }
-}
-
-pub unsafe fn pa_simple_write(
-    s: *mut pa_simple,
-    data: *const c_void,
-    bytes: usize,
-    error: *mut i32,
-) -> i32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_simple_write)(s, data, bytes, error)
-    } else {
-        -1
-    }
-}
-
-pub unsafe fn pa_simple_drain(s: *mut pa_simple, error: *mut i32) -> i32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_simple_drain)(s, error)
-    } else {
-        -1
-    }
-}
-
-pub unsafe fn pa_simple_read(
-    s: *mut pa_simple,
-    data: *mut c_void,
-    bytes: usize,
-    error: *mut i32,
-) -> i32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_simple_read)(s, data, bytes, error)
-    } else {
-        -1
-    }
-}
-
-pub unsafe fn pa_simple_get_latency(
-    s: *mut pa_simple,
-    error: *mut i32,
-) -> pulse::sample::pa_usec_t {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_simple_get_latency)(s, error)
-    } else {
-        0
-    }
-}
-
-pub unsafe fn pa_simple_flush(s: *mut pa_simple, error: *mut i32) -> i32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_simple_flush)(s, error)
-    } else {
-        -1
-    }
+#[rustfmt::skip]
+#[link(name = "pulse-simple")]
+extern "C" {
+    pub fn pa_simple_new(server: *const c_char, name: *const c_char, dir: pulse::stream::pa_stream_direction_t, dev: *const c_char, stream_name: *const c_char, ss: *const pulse::sample::pa_sample_spec, map: *const pulse::channelmap::pa_channel_map, attr: *const pulse::def::pa_buffer_attr, error: *mut i32) -> *mut pa_simple;
+    pub fn pa_simple_free(s: *mut pa_simple);
+    pub fn pa_simple_write(s: *mut pa_simple, data: *const c_void, bytes: usize, error: *mut i32) -> i32;
+    pub fn pa_simple_drain(s: *mut pa_simple, error: *mut i32) -> i32;
+    pub fn pa_simple_read(s: *mut pa_simple, data: *mut c_void, bytes: usize, error: *mut i32) -> i32;
+    pub fn pa_simple_get_latency(s: *mut pa_simple, error: *mut i32) -> pulse::sample::pa_usec_t;
+    pub fn pa_simple_flush(s: *mut pa_simple, error: *mut i32) -> i32;
 }
