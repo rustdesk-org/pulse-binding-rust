@@ -13,53 +13,14 @@
 
 //! UTF-8 validation functions.
 
-use crate::ffi;
 use std::os::raw::c_char;
 
-pub unsafe fn pa_utf8_valid(str: *const c_char) -> *const c_char {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_utf8_valid)(str)
-    } else {
-        std::ptr::null()
-    }
-}
-
-pub unsafe fn pa_ascii_valid(str: *const c_char) -> *mut c_char {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_ascii_valid)(str)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_utf8_filter(str: *const c_char) -> *mut c_char {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_utf8_filter)(str)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_ascii_filter(str: *const c_char) -> *mut c_char {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_ascii_filter)(str)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_utf8_to_locale(str: *const c_char) -> *mut c_char {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_utf8_to_locale)(str)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_locale_to_utf8(str: *const c_char) -> *mut c_char {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_locale_to_utf8)(str)
-    } else {
-        std::ptr::null_mut()
-    }
+#[link(name = "pulse")]
+extern "C" {
+    pub fn pa_utf8_valid(s: *const c_char) -> *mut c_char;
+    pub fn pa_ascii_valid(s: *const c_char) -> *mut c_char;
+    pub fn pa_utf8_filter(s: *const c_char) -> *mut c_char;
+    pub fn pa_ascii_filter(s: *const c_char) -> *mut c_char;
+    pub fn pa_utf8_to_locale(s: *const c_char) -> *mut c_char;
+    pub fn pa_locale_to_utf8(s: *const c_char) -> *mut c_char;
 }

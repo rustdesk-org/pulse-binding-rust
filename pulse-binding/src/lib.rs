@@ -154,7 +154,9 @@
     html_logo_url = "https://github.com/jnqnfe/pulse-binding-rust/raw/master/logo.svg",
     html_favicon_url = "https://github.com/jnqnfe/pulse-binding-rust/raw/master/favicon.ico"
 )]
+
 #![warn(missing_docs)]
+
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
 extern crate libpulse_sys as capi;
@@ -176,8 +178,3 @@ pub mod utf8;
 pub mod util;
 pub mod version;
 pub mod volume;
-
-/// Initializes the underlying FFI library, call it multiple times is safe.
-pub fn init_sys() -> Result<(), Box<dyn std::error::Error>> {
-    libpulse_sys::ffi::init()
-}

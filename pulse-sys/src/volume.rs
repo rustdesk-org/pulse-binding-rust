@@ -13,10 +13,9 @@
 
 //! Constants and routines for volume handling.
 
-use crate::channelmap::{pa_channel_map, pa_channel_position_mask_t, pa_channel_position_t};
-use crate::ffi;
-use crate::sample::pa_sample_spec;
 use std::os::raw::c_char;
+use crate::channelmap::{pa_channel_map, pa_channel_position_mask_t, pa_channel_position_t};
+use crate::sample::pa_sample_spec;
 
 /// The basic volume type.
 pub type pa_volume_t = u32;
@@ -118,442 +117,59 @@ pub unsafe fn pa_cvolume_mute(a: *mut pa_cvolume, n: u32) -> *mut pa_cvolume {
     pa_cvolume_set(a, n, PA_VOLUME_MUTED)
 }
 
-pub unsafe fn pa_cvolume_equal(a: *const pa_cvolume, b: *const pa_cvolume) -> i32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_cvolume_equal)(a, b)
-    } else {
-        0
-    }
-}
+#[rustfmt::skip]
+#[link(name = "pulse")]
+extern "C" {
+    pub fn pa_cvolume_equal(a: *const pa_cvolume, b: *const pa_cvolume) -> i32;
+    pub fn pa_cvolume_init(a: *mut pa_cvolume) -> *mut pa_cvolume;
+    pub fn pa_cvolume_set(a: *mut pa_cvolume, channels: u32, v: pa_volume_t) -> *mut pa_cvolume;
+    pub fn pa_cvolume_snprint(s: *mut c_char, l: usize, c: *const pa_cvolume) -> *mut c_char;
+    pub fn pa_sw_cvolume_snprint_dB(s: *mut c_char, l: usize, c: *const pa_cvolume) -> *mut c_char;
+    pub fn pa_cvolume_snprint_verbose(s: *mut c_char, l: usize, c: *const pa_cvolume, map: *const pa_channel_map, print_dB: i32) -> *mut c_char;
 
-pub unsafe fn pa_cvolume_init(a: *mut pa_cvolume) -> *mut pa_cvolume {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_cvolume_init)(a)
-    } else {
-        std::ptr::null_mut()
-    }
-}
+    pub fn pa_volume_snprint(s: *mut c_char, l: usize, v: pa_volume_t) -> *mut c_char;
+    pub fn pa_sw_volume_snprint_dB(s: *mut c_char, l: usize, v: pa_volume_t) -> *mut c_char;
+    pub fn pa_volume_snprint_verbose(s: *mut c_char, l: usize, v: pa_volume_t, print_dB: i32) -> *mut c_char;
 
-pub unsafe fn pa_cvolume_set(a: *mut pa_cvolume, channels: u32, v: pa_volume_t) -> *mut pa_cvolume {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_cvolume_set)(a, channels, v)
-    } else {
-        std::ptr::null_mut()
-    }
-}
+    pub fn pa_cvolume_avg(a: *const pa_cvolume) -> pa_volume_t;
+    pub fn pa_cvolume_avg_mask(a: *const pa_cvolume, cm: *const pa_channel_map, mask: pa_channel_position_mask_t) -> pa_volume_t;
+    pub fn pa_cvolume_max(a: *const pa_cvolume) -> pa_volume_t;
+    pub fn pa_cvolume_max_mask(a: *const pa_cvolume, cm: *const pa_channel_map, mask: pa_channel_position_mask_t) -> pa_volume_t;
+    pub fn pa_cvolume_min(a: *const pa_cvolume) -> pa_volume_t;
+    pub fn pa_cvolume_min_mask(a: *const pa_cvolume, cm: *const pa_channel_map, mask: pa_channel_position_mask_t) -> pa_volume_t;
+    pub fn pa_cvolume_valid(v: *const pa_cvolume) -> i32;
+    pub fn pa_cvolume_channels_equal_to(a: *const pa_cvolume, v: pa_volume_t) -> i32;
 
-pub unsafe fn pa_cvolume_snprint(s: *mut c_char, l: usize, c: *const pa_cvolume) -> *mut c_char {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_cvolume_snprint)(s, l, c)
-    } else {
-        std::ptr::null_mut()
-    }
-}
+    pub fn pa_sw_volume_multiply(a: pa_volume_t, b: pa_volume_t) -> pa_volume_t;
+    pub fn pa_sw_cvolume_multiply(dest: *mut pa_cvolume, a: *const pa_cvolume, b: *const pa_cvolume) -> *mut pa_cvolume;
+    pub fn pa_sw_cvolume_multiply_scalar(dest: *mut pa_cvolume, a: *const pa_cvolume, b: pa_volume_t) -> *mut pa_cvolume;
+    pub fn pa_sw_volume_divide(a: pa_volume_t, b: pa_volume_t) -> pa_volume_t;
+    pub fn pa_sw_cvolume_divide(dest: *mut pa_cvolume, a: *const pa_cvolume, b: *const pa_cvolume) -> *mut pa_cvolume;
+    pub fn pa_sw_cvolume_divide_scalar(dest: *mut pa_cvolume, a: *const pa_cvolume, b: pa_volume_t) -> *mut pa_cvolume;
+    pub fn pa_sw_volume_from_dB(f: f64) -> pa_volume_t;
+    pub fn pa_sw_volume_to_dB(v: pa_volume_t) -> f64;
+    pub fn pa_sw_volume_from_linear(v: f64) -> pa_volume_t;
+    pub fn pa_sw_volume_to_linear(v: pa_volume_t) -> f64;
 
-pub unsafe fn pa_sw_cvolume_snprint_dB(
-    s: *mut c_char,
-    l: usize,
-    c: *const pa_cvolume,
-) -> *mut c_char {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_sw_cvolume_snprint_dB)(s, l, c)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_cvolume_snprint_verbose(
-    s: *mut c_char,
-    l: usize,
-    c: *const pa_cvolume,
-    map: *const pa_channel_map,
-    print_dB: i32,
-) -> *mut c_char {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_cvolume_snprint_verbose)(s, l, c, map, print_dB)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_volume_snprint(s: *mut c_char, l: usize, v: pa_volume_t) -> *mut c_char {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_volume_snprint)(s, l, v)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_sw_volume_snprint_dB(s: *mut c_char, l: usize, v: pa_volume_t) -> *mut c_char {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_sw_volume_snprint_dB)(s, l, v)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_volume_snprint_verbose(
-    s: *mut c_char,
-    l: usize,
-    v: pa_volume_t,
-    print_dB: i32,
-) -> *mut c_char {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_volume_snprint_verbose)(s, l, v, print_dB)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_cvolume_avg(a: *const pa_cvolume) -> pa_volume_t {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_cvolume_avg)(a)
-    } else {
-        PA_VOLUME_MUTED
-    }
-}
-
-pub unsafe fn pa_cvolume_avg_mask(
-    a: *const pa_cvolume,
-    cm: *const pa_channel_map,
-    mask: pa_channel_position_mask_t,
-) -> pa_volume_t {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_cvolume_avg_mask)(a, cm, mask)
-    } else {
-        PA_VOLUME_MUTED
-    }
-}
-
-pub unsafe fn pa_cvolume_max(a: *const pa_cvolume) -> pa_volume_t {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_cvolume_max)(a)
-    } else {
-        PA_VOLUME_MUTED
-    }
-}
-
-pub unsafe fn pa_cvolume_max_mask(
-    a: *const pa_cvolume,
-    cm: *const pa_channel_map,
-    mask: pa_channel_position_mask_t,
-) -> pa_volume_t {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_cvolume_max_mask)(a, cm, mask)
-    } else {
-        PA_VOLUME_MUTED
-    }
-}
-
-pub unsafe fn pa_cvolume_min(a: *const pa_cvolume) -> pa_volume_t {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_cvolume_min)(a)
-    } else {
-        PA_VOLUME_MUTED
-    }
-}
-
-pub unsafe fn pa_cvolume_min_mask(
-    a: *const pa_cvolume,
-    cm: *const pa_channel_map,
-    mask: pa_channel_position_mask_t,
-) -> pa_volume_t {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_cvolume_min_mask)(a, cm, mask)
-    } else {
-        PA_VOLUME_MUTED
-    }
-}
-
-pub unsafe fn pa_cvolume_valid(v: *const pa_cvolume) -> i32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_cvolume_valid)(v)
-    } else {
-        0
-    }
-}
-
-pub unsafe fn pa_cvolume_channels_equal_to(a: *const pa_cvolume, v: pa_volume_t) -> i32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_cvolume_channels_equal_to)(a, v)
-    } else {
-        0
-    }
-}
-
-pub unsafe fn pa_sw_volume_multiply(a: pa_volume_t, b: pa_volume_t) -> pa_volume_t {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_sw_volume_multiply)(a, b)
-    } else {
-        PA_VOLUME_MUTED
-    }
-}
-
-pub unsafe fn pa_sw_cvolume_multiply(
-    dest: *mut pa_cvolume,
-    a: *const pa_cvolume,
-    b: *const pa_cvolume,
-) -> *mut pa_cvolume {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_sw_cvolume_multiply)(dest, a, b)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_sw_cvolume_multiply_scalar(
-    dest: *mut pa_cvolume,
-    a: *const pa_cvolume,
-    b: pa_volume_t,
-) -> *mut pa_cvolume {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_sw_cvolume_multiply_scalar)(dest, a, b)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_sw_volume_divide(a: pa_volume_t, b: pa_volume_t) -> pa_volume_t {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_sw_volume_divide)(a, b)
-    } else {
-        PA_VOLUME_MUTED
-    }
-}
-
-pub unsafe fn pa_sw_cvolume_divide(
-    dest: *mut pa_cvolume,
-    a: *const pa_cvolume,
-    b: *const pa_cvolume,
-) -> *mut pa_cvolume {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_sw_cvolume_divide)(dest, a, b)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_sw_cvolume_divide_scalar(
-    dest: *mut pa_cvolume,
-    a: *const pa_cvolume,
-    b: pa_volume_t,
-) -> *mut pa_cvolume {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_sw_cvolume_divide_scalar)(dest, a, b)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_sw_volume_from_dB(f: f64) -> pa_volume_t {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_sw_volume_from_dB)(f)
-    } else {
-        PA_VOLUME_MUTED
-    }
-}
-
-pub unsafe fn pa_sw_volume_to_dB(v: pa_volume_t) -> f64 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_sw_volume_to_dB)(v)
-    } else {
-        PA_DECIBEL_MININFTY
-    }
-}
-
-pub unsafe fn pa_sw_volume_from_linear(v: f64) -> pa_volume_t {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_sw_volume_from_linear)(v)
-    } else {
-        PA_VOLUME_MUTED
-    }
-}
-
-pub unsafe fn pa_sw_volume_to_linear(v: pa_volume_t) -> f64 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_sw_volume_to_linear)(v)
-    } else {
-        0.0
-    }
-}
-
-pub unsafe fn pa_cvolume_remap(
-    v: *mut pa_cvolume,
-    from: *const pa_channel_map,
-    to: *const pa_channel_map,
-) -> *mut pa_cvolume {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_cvolume_remap)(v, from, to)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_cvolume_compatible(v: *const pa_cvolume, ss: *const pa_sample_spec) -> i32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_cvolume_compatible)(v, ss)
-    } else {
-        0
-    }
-}
-
-pub unsafe fn pa_cvolume_compatible_with_channel_map(
-    v: *const pa_cvolume,
-    cm: *const pa_channel_map,
-) -> i32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_cvolume_compatible_with_channel_map)(v, cm)
-    } else {
-        0
-    }
-}
-
-pub unsafe fn pa_cvolume_get_balance(v: *const pa_cvolume, map: *const pa_channel_map) -> f32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_cvolume_get_balance)(v, map)
-    } else {
-        0.0
-    }
-}
-
-pub unsafe fn pa_cvolume_set_balance(
-    v: *mut pa_cvolume,
-    map: *const pa_channel_map,
-    new_balance: f32,
-) -> *mut pa_cvolume {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_cvolume_set_balance)(v, map, new_balance)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_cvolume_get_fade(v: *const pa_cvolume, map: *const pa_channel_map) -> f32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_cvolume_get_fade)(v, map)
-    } else {
-        0.0
-    }
-}
-
-pub unsafe fn pa_cvolume_set_fade(
-    v: *mut pa_cvolume,
-    map: *const pa_channel_map,
-    new_fade: f32,
-) -> *mut pa_cvolume {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_cvolume_set_fade)(v, map, new_fade)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-#[cfg(any(doc, feature = "pa_v8"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "pa_v8")))]
-pub unsafe fn pa_cvolume_get_lfe_balance(v: *const pa_cvolume, map: *const pa_channel_map) -> f32 {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_cvolume_get_lfe_balance)(v, map)
-    } else {
-        0.0
-    }
-}
-
-#[cfg(any(doc, feature = "pa_v8"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "pa_v8")))]
-pub unsafe fn pa_cvolume_set_lfe_balance(
-    v: *mut pa_cvolume,
-    map: *const pa_channel_map,
-    new_balance: f32,
-) -> *mut pa_cvolume {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_cvolume_set_lfe_balance)(v, map, new_balance)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_cvolume_scale(v: *mut pa_cvolume, max: pa_volume_t) -> *mut pa_cvolume {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_cvolume_scale)(v, max)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_cvolume_scale_mask(
-    v: *mut pa_cvolume,
-    max: pa_volume_t,
-    cm: *const pa_channel_map,
-    mask: pa_channel_position_mask_t,
-) -> *mut pa_cvolume {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_cvolume_scale_mask)(v, max, cm, mask)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_cvolume_set_position(
-    cv: *mut pa_cvolume,
-    map: *const pa_channel_map,
-    t: pa_channel_position_t,
-    v: pa_volume_t,
-) -> *mut pa_cvolume {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_cvolume_set_position)(cv, map, t, v)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_cvolume_get_position(
-    cv: *const pa_cvolume,
-    map: *const pa_channel_map,
-    t: pa_channel_position_t,
-) -> pa_volume_t {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_cvolume_get_position)(cv, map, t)
-    } else {
-        PA_VOLUME_MUTED
-    }
-}
-
-pub unsafe fn pa_cvolume_merge(
-    dest: *mut pa_cvolume,
-    a: *const pa_cvolume,
-    b: *const pa_cvolume,
-) -> *mut pa_cvolume {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_cvolume_merge)(dest, a, b)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_cvolume_inc_clamp(
-    v: *mut pa_cvolume,
-    inc: pa_volume_t,
-    limit: pa_volume_t,
-) -> *mut pa_cvolume {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_cvolume_inc_clamp)(v, inc, limit)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_cvolume_inc(v: *mut pa_cvolume, inc: pa_volume_t) -> *mut pa_cvolume {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_cvolume_inc)(v, inc)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_cvolume_dec(v: *mut pa_cvolume, dec: pa_volume_t) -> *mut pa_cvolume {
-    if let Some(functions) = ffi::get_functions() {
-        (functions.pa_cvolume_dec)(v, dec)
-    } else {
-        std::ptr::null_mut()
-    }
+    pub fn pa_cvolume_remap(v: *mut pa_cvolume, from: *const pa_channel_map, to: *const pa_channel_map) -> *mut pa_cvolume;
+    pub fn pa_cvolume_compatible(v: *const pa_cvolume, ss: *const pa_sample_spec) -> i32;
+    pub fn pa_cvolume_compatible_with_channel_map(v: *const pa_cvolume, cm: *const pa_channel_map) -> i32;
+    pub fn pa_cvolume_get_balance(v: *const pa_cvolume, map: *const pa_channel_map) -> f32;
+    pub fn pa_cvolume_set_balance(v: *mut pa_cvolume, map: *const pa_channel_map, new_balance: f32) -> *mut pa_cvolume;
+    pub fn pa_cvolume_get_fade(v: *const pa_cvolume, map: *const pa_channel_map) -> f32;
+    pub fn pa_cvolume_set_fade(v: *mut pa_cvolume, map: *const pa_channel_map, new_fade: f32) -> *mut pa_cvolume;
+    #[cfg(any(doc, feature = "pa_v8"))]
+    #[cfg_attr(docsrs, doc(cfg(feature = "pa_v8")))]
+    pub fn pa_cvolume_get_lfe_balance(v: *const pa_cvolume, map: *const pa_channel_map) -> f32;
+    #[cfg(any(doc, feature = "pa_v8"))]
+    #[cfg_attr(docsrs, doc(cfg(feature = "pa_v8")))]
+    pub fn pa_cvolume_set_lfe_balance(v: *mut pa_cvolume, map: *const pa_channel_map, new_balance: f32) -> *mut pa_cvolume;
+    pub fn pa_cvolume_scale(v: *mut pa_cvolume, max: pa_volume_t) -> *mut pa_cvolume;
+    pub fn pa_cvolume_scale_mask(v: *mut pa_cvolume, max: pa_volume_t, cm: *const pa_channel_map, mask: pa_channel_position_mask_t) -> *mut pa_cvolume;
+    pub fn pa_cvolume_set_position(cv: *mut pa_cvolume, map: *const pa_channel_map, t: pa_channel_position_t, v: pa_volume_t) -> *mut pa_cvolume;
+    pub fn pa_cvolume_get_position(cv: *const pa_cvolume, map: *const pa_channel_map, t: pa_channel_position_t) -> pa_volume_t;
+    pub fn pa_cvolume_merge(dest: *mut pa_cvolume, a: *const pa_cvolume, b: *const pa_cvolume) -> *mut pa_cvolume;
+    pub fn pa_cvolume_inc_clamp(v: *mut pa_cvolume, inc: pa_volume_t, limit: pa_volume_t) -> *mut pa_cvolume;
+    pub fn pa_cvolume_inc(v: *mut pa_cvolume, inc: pa_volume_t) -> *mut pa_cvolume;
+    pub fn pa_cvolume_dec(v: *mut pa_cvolume, dec: pa_volume_t) -> *mut pa_cvolume;
 }

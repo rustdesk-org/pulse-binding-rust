@@ -106,19 +106,21 @@
     html_logo_url = "https://github.com/jnqnfe/pulse-binding-rust/raw/master/logo.svg",
     html_favicon_url = "https://github.com/jnqnfe/pulse-binding-rust/raw/master/favicon.ico"
 )]
+
 #![warn(missing_docs)]
+
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
 extern crate libpulse_binding as pulse;
-extern crate libpulse_simple_sys as capi;
 extern crate libpulse_sys as pcapi;
+extern crate libpulse_simple_sys as capi;
 
-use pulse::error::{Code, PAErr};
-use pulse::time::MicroSeconds;
-use pulse::{channelmap, def, sample, stream};
-use std::mem;
 use std::os::raw::{c_char, c_void};
 use std::{ffi::CString, ptr::null};
+use std::mem;
+use pulse::error::{Code, PAErr};
+use pulse::time::MicroSeconds;
+use pulse::{stream, sample, channelmap, def};
 
 use capi::pa_simple as SimpleInternal;
 
@@ -144,16 +146,10 @@ impl Simple {
     /// * `ss`: The sample type to use.
     /// * `map`: The channel map to use, or `None` for default.
     /// * `attr`: Buffering attributes, or `None` for default.
-    pub fn new(
-        server: Option<&str>,
-        name: &str,
-        dir: stream::Direction,
-        dev: Option<&str>,
-        stream_name: &str,
-        ss: &sample::Spec,
-        map: Option<&channelmap::Map>,
-        attr: Option<&def::BufferAttr>,
-    ) -> Result<Self, PAErr> {
+    pub fn new(server: Option<&str>, name: &str, dir: stream::Direction, dev: Option<&str>,
+        stream_name: &str, ss: &sample::Spec, map: Option<&channelmap::Map>,
+        attr: Option<&def::BufferAttr>) -> Result<Self, PAErr>
+    {
         // Warning: New CStrings will be immediately freed if not bound to a variable, leading to
         // as_ptr() giving dangling pointers!
         let c_server = match server {
@@ -183,7 +179,7 @@ impl Simple {
                 mem::transmute(ss),
                 p_map,
                 p_attr,
-                &mut error,
+                &mut error
             )
         };
         match ptr.is_null() {
@@ -201,14 +197,9 @@ impl Simple {
     /// Writes some data to the server.
     pub fn write(&self, data: &[u8]) -> Result<(), PAErr> {
         let mut error: i32 = 0;
-        match unsafe {
-            capi::pa_simple_write(
-                self.ptr,
-                data.as_ptr() as *mut c_void,
-                data.len(),
-                &mut error,
-            )
-        } {
+        match unsafe { capi::pa_simple_write(self.ptr, data.as_ptr() as *mut c_void, data.len(),
+            &mut error) }
+        {
             0 => Ok(()),
             _ => Err(PAErr(error)),
         }
@@ -229,14 +220,9 @@ impl Simple {
     /// or until an error occurs.
     pub fn read(&self, data: &mut [u8]) -> Result<(), PAErr> {
         let mut error: i32 = 0;
-        match unsafe {
-            capi::pa_simple_read(
-                self.ptr,
-                data.as_mut_ptr() as *mut c_void,
-                data.len(),
-                &mut error,
-            )
-        } {
+        match unsafe { capi::pa_simple_read(self.ptr, data.as_mut_ptr() as *mut c_void, data.len(),
+            &mut error) }
+        {
             0 => Ok(()),
             _ => Err(PAErr(error)),
         }
@@ -273,9 +259,4 @@ impl Drop for Simple {
         unsafe { capi::pa_simple_free(self.ptr) };
         self.ptr = null::<SimpleInternal>() as *mut SimpleInternal;
     }
-}
-
-/// Initializes the underlying FFI library, call it multiple times is safe.
-pub fn init_sys() -> Result<(), Box<dyn std::error::Error>> {
-    libpulse_simple_sys::ffi::init()
 }

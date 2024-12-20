@@ -13,10 +13,10 @@
 
 //! Routines for controlling module-stream-restore.
 
-use super::{pa_context, pa_context_success_cb_t};
-use crate::{channelmap::pa_channel_map, volume::pa_cvolume};
-use crate::{operation::pa_operation, proplist::pa_update_mode_t};
 use std::os::raw::{c_char, c_void};
+use super::{pa_context, pa_context_success_cb_t};
+use crate::{operation::pa_operation, proplist::pa_update_mode_t};
+use crate::{volume::pa_cvolume, channelmap::pa_channel_map};
 
 #[repr(C)]
 pub struct pa_ext_stream_restore_info {
@@ -36,78 +36,13 @@ pub type pa_ext_stream_restore_read_cb_t = Option<extern "C" fn(c: *mut pa_conte
 #[rustfmt::skip]
 pub type pa_ext_stream_restore_subscribe_cb_t = Option<extern "C" fn(c: *mut pa_context, userdata: *mut c_void)>;
 
-pub unsafe fn pa_ext_stream_restore_test(
-    c: *mut pa_context,
-    cb: pa_ext_stream_restore_test_cb_t,
-    userdata: *mut c_void,
-) -> *mut pa_operation {
-    if let Some(functions) = crate::ffi::get_functions() {
-        (functions.pa_ext_stream_restore_test)(c, cb, userdata)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_ext_stream_restore_read(
-    c: *mut pa_context,
-    cb: pa_ext_stream_restore_read_cb_t,
-    userdata: *mut c_void,
-) -> *mut pa_operation {
-    if let Some(functions) = crate::ffi::get_functions() {
-        (functions.pa_ext_stream_restore_read)(c, cb, userdata)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_ext_stream_restore_write(
-    c: *mut pa_context,
-    mode: pa_update_mode_t,
-    data: *const pa_ext_stream_restore_info,
-    n: u32,
-    apply_immediately: i32,
-    cb: pa_context_success_cb_t,
-    userdata: *mut c_void,
-) -> *mut pa_operation {
-    if let Some(functions) = crate::ffi::get_functions() {
-        (functions.pa_ext_stream_restore_write)(c, mode, data, n, apply_immediately, cb, userdata)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_ext_stream_restore_delete(
-    c: *mut pa_context,
-    s: *const *const c_char,
-    cb: pa_context_success_cb_t,
-    userdata: *mut c_void,
-) -> *mut pa_operation {
-    if let Some(functions) = crate::ffi::get_functions() {
-        (functions.pa_ext_stream_restore_delete)(c, s, cb, userdata)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_ext_stream_restore_subscribe(
-    c: *mut pa_context,
-    enable: i32,
-    cb: pa_context_success_cb_t,
-    userdata: *mut c_void,
-) -> *mut pa_operation {
-    if let Some(functions) = crate::ffi::get_functions() {
-        (functions.pa_ext_stream_restore_subscribe)(c, enable, cb, userdata)
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
-pub unsafe fn pa_ext_stream_restore_set_subscribe_cb(
-    c: *mut pa_context,
-    cb: pa_ext_stream_restore_subscribe_cb_t,
-    userdata: *mut c_void,
-) {
-    if let Some(functions) = crate::ffi::get_functions() {
-        (functions.pa_ext_stream_restore_set_subscribe_cb)(c, cb, userdata)
-    }
+#[rustfmt::skip]
+#[link(name = "pulse")]
+extern "C" {
+    pub fn pa_ext_stream_restore_test(c: *mut pa_context, cb: pa_ext_stream_restore_test_cb_t, userdata: *mut c_void) -> *mut pa_operation;
+    pub fn pa_ext_stream_restore_read(c: *mut pa_context, cb: pa_ext_stream_restore_read_cb_t, userdata: *mut c_void) -> *mut pa_operation;
+    pub fn pa_ext_stream_restore_write(c: *mut pa_context, mode: pa_update_mode_t, data: *const *const pa_ext_stream_restore_info, n: u32, apply_immediately: i32, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
+    pub fn pa_ext_stream_restore_delete(c: *mut pa_context, s: *const *const c_char, b: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
+    pub fn pa_ext_stream_restore_subscribe(c: *mut pa_context, enable: i32, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
+    pub fn pa_ext_stream_restore_set_subscribe_cb(c: *mut pa_context, cb: pa_ext_stream_restore_subscribe_cb_t, userdata: *mut c_void);
 }
