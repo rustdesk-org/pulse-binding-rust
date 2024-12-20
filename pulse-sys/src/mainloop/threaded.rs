@@ -13,31 +13,114 @@
 
 //! A variation of the standard main loop implementation, using a background thread.
 
-use std::os::raw::c_char;
+use super::api::pa_mainloop_api;
+use crate::ffi;
+use std::os::raw::{c_char, c_void};
+
+/// An opaque main loop object.
+#[repr(C)]
+pub struct pa_threaded_mainloop {
+    _private: [u8; 0],
+}
+
+pub unsafe fn pa_threaded_mainloop_new() -> *mut pa_threaded_mainloop {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_threaded_mainloop_new)()
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_threaded_mainloop_free(m: *mut pa_threaded_mainloop) {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_threaded_mainloop_free)(m)
+    }
+}
+
+pub unsafe fn pa_threaded_mainloop_start(m: *mut pa_threaded_mainloop) -> i32 {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_threaded_mainloop_start)(m)
+    } else {
+        -1
+    }
+}
+
+pub unsafe fn pa_threaded_mainloop_stop(m: *mut pa_threaded_mainloop) {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_threaded_mainloop_stop)(m)
+    }
+}
+
+pub unsafe fn pa_threaded_mainloop_lock(m: *mut pa_threaded_mainloop) {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_threaded_mainloop_lock)(m)
+    }
+}
+
+pub unsafe fn pa_threaded_mainloop_unlock(m: *mut pa_threaded_mainloop) {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_threaded_mainloop_unlock)(m)
+    }
+}
+
+pub unsafe fn pa_threaded_mainloop_wait(m: *mut pa_threaded_mainloop) {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_threaded_mainloop_wait)(m)
+    }
+}
+
+pub unsafe fn pa_threaded_mainloop_signal(m: *mut pa_threaded_mainloop, wait_for_accept: i32) {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_threaded_mainloop_signal)(m, wait_for_accept)
+    }
+}
+
+pub unsafe fn pa_threaded_mainloop_accept(m: *mut pa_threaded_mainloop) {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_threaded_mainloop_accept)(m)
+    }
+}
+
+pub unsafe fn pa_threaded_mainloop_get_retval(m: *const pa_threaded_mainloop) -> i32 {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_threaded_mainloop_get_retval)(m)
+    } else {
+        -1
+    }
+}
+
+pub unsafe fn pa_threaded_mainloop_get_api(
+    m: *const pa_threaded_mainloop,
+) -> *const pa_mainloop_api {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_threaded_mainloop_get_api)(m)
+    } else {
+        std::ptr::null()
+    }
+}
+
+pub unsafe fn pa_threaded_mainloop_in_thread(m: *mut pa_threaded_mainloop) -> i32 {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_threaded_mainloop_in_thread)(m)
+    } else {
+        0
+    }
+}
+
+pub unsafe fn pa_threaded_mainloop_set_name(m: *mut pa_threaded_mainloop, name: *const c_char) {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_threaded_mainloop_set_name)(m, name)
+    }
+}
+
 #[cfg(any(doc, feature = "pa_v13"))]
-use std::os::raw::c_void;
-use crate::mainloop::api::pa_mainloop_api;
-
-/// An opaque threaded main loop object.
-#[repr(C)] pub struct pa_threaded_mainloop { _private: [u8; 0] }
-
-#[rustfmt::skip]
-#[link(name = "pulse")]
-extern "C" {
-    pub fn pa_threaded_mainloop_new() -> *mut pa_threaded_mainloop;
-    pub fn pa_threaded_mainloop_free(m: *mut pa_threaded_mainloop);
-    pub fn pa_threaded_mainloop_start(m: *mut pa_threaded_mainloop) -> i32;
-    pub fn pa_threaded_mainloop_stop(m: *mut pa_threaded_mainloop);
-    pub fn pa_threaded_mainloop_lock(m: *mut pa_threaded_mainloop);
-    pub fn pa_threaded_mainloop_unlock(m: *mut pa_threaded_mainloop);
-    pub fn pa_threaded_mainloop_wait(m: *mut pa_threaded_mainloop);
-    pub fn pa_threaded_mainloop_signal(m: *mut pa_threaded_mainloop, wait_for_accept: i32);
-    pub fn pa_threaded_mainloop_accept(m: *mut pa_threaded_mainloop);
-    pub fn pa_threaded_mainloop_get_retval(m: *const pa_threaded_mainloop) -> i32;
-    pub fn pa_threaded_mainloop_get_api(m: *const pa_threaded_mainloop) -> *const pa_mainloop_api;
-    pub fn pa_threaded_mainloop_in_thread(m: *mut pa_threaded_mainloop) -> i32;
-    pub fn pa_threaded_mainloop_set_name(m: *mut pa_threaded_mainloop, name: *const c_char);
-    #[cfg(any(doc, feature = "pa_v13"))]
-    #[cfg_attr(docsrs, doc(cfg(feature = "pa_v13")))]
-    pub fn pa_threaded_mainloop_once_unlocked(m: *mut pa_threaded_mainloop, callback: extern "C" fn(m: *mut pa_threaded_mainloop, userdata: *mut c_void), userdata: *mut c_void);
+#[cfg_attr(docsrs, doc(cfg(feature = "pa_v13")))]
+pub unsafe fn pa_threaded_mainloop_once_unlocked(
+    m: *mut pa_threaded_mainloop,
+    callback: extern "C" fn(m: *mut pa_threaded_mainloop, userdata: *mut c_void),
+    userdata: *mut c_void,
+) {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_threaded_mainloop_once_unlocked)(m, callback, userdata)
+    }
 }

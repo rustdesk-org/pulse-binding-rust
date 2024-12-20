@@ -13,13 +13,14 @@
 
 //! Routines for daemon introspection.
 
-use std::os::raw::{c_char, c_void};
 use super::{pa_context, pa_context_success_cb_t};
-use crate::volume::{pa_cvolume, pa_volume_t};
-use crate::sample::{pa_sample_spec, pa_usec_t};
 use crate::def::{pa_sink_flags_t, pa_sink_state_t, pa_source_flags_t, pa_source_state_t};
-use crate::{operation::pa_operation, channelmap::pa_channel_map};
-use crate::{proplist::pa_proplist, format::pa_format_info};
+use crate::ffi;
+use crate::sample::{pa_sample_spec, pa_usec_t};
+use crate::volume::{pa_cvolume, pa_volume_t};
+use crate::{channelmap::pa_channel_map, operation::pa_operation};
+use crate::{format::pa_format_info, proplist::pa_proplist};
+use std::os::raw::{c_char, c_void};
 
 #[repr(C)]
 pub struct pa_sink_port_info {
@@ -342,74 +343,749 @@ pub type pa_sample_info_cb_t = Option<extern "C" fn(c: *mut pa_context, i: *cons
 #[cfg_attr(docsrs, doc(cfg(feature = "pa_v15")))]
 pub type pa_context_string_cb_t = Option<extern "C" fn(c: *mut pa_context, success: i32, response: *const c_char, userdata: *mut c_void)>;
 
-#[rustfmt::skip]
-#[link(name = "pulse")]
-extern "C" {
-    pub fn pa_context_get_sink_info_by_name(c: *mut pa_context, name: *const c_char, cb: pa_sink_info_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_get_sink_info_by_index(c: *mut pa_context, idx: u32, cb: pa_sink_info_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_get_sink_info_list(c: *mut pa_context, cb: pa_sink_info_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_set_sink_volume_by_index(c: *mut pa_context, idx: u32, volume: *const pa_cvolume, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_set_sink_volume_by_name(c: *mut pa_context, name: *const c_char, volume: *const pa_cvolume, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_set_sink_mute_by_index(c: *mut pa_context, idx: u32, mute: i32, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_set_sink_mute_by_name(c: *mut pa_context, name: *const c_char, mute: i32, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_suspend_sink_by_name(c: *mut pa_context, sink_name: *const c_char, suspend: i32, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_suspend_sink_by_index(c: *mut pa_context, idx: u32, suspend: i32, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_set_sink_port_by_index(c: *mut pa_context, idx: u32, port: *const c_char, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_set_sink_port_by_name(c: *mut pa_context, name: *const c_char, port: *const c_char, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
+pub unsafe fn pa_context_get_sink_info_by_name(
+    c: *mut pa_context,
+    name: *const c_char,
+    cb: pa_sink_info_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_get_sink_info_by_name)(c, name, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
 
-    pub fn pa_context_get_source_info_by_name(c: *mut pa_context, name: *const c_char, cb: pa_source_info_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_get_source_info_by_index(c: *mut pa_context, idx: u32, cb: pa_source_info_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_get_source_info_list(c: *mut pa_context, cb: pa_source_info_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_set_source_volume_by_index(c: *mut pa_context, idx: u32, volume: *const pa_cvolume, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_set_source_volume_by_name(c: *mut pa_context, name: *const c_char, volume: *const pa_cvolume, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_set_source_mute_by_index(c: *mut pa_context, idx: u32, mute: i32, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_set_source_mute_by_name(c: *mut pa_context, name: *const c_char, mute: i32, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_suspend_source_by_name(c: *mut pa_context, source_name: *const c_char, suspend: i32, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_suspend_source_by_index(c: *mut pa_context, idx: u32, suspend: i32, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_set_source_port_by_index(c: *mut pa_context, idx: u32, port: *const c_char, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_set_source_port_by_name(c: *mut pa_context, name: *const c_char, port: *const c_char, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
+pub unsafe fn pa_context_get_sink_info_by_index(
+    c: *mut pa_context,
+    idx: u32,
+    cb: pa_sink_info_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_get_sink_info_by_index)(c, idx, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
 
-    pub fn pa_context_get_server_info(c: *mut pa_context, cb: pa_server_info_cb_t, userdata: *mut c_void) -> *mut pa_operation;
+pub unsafe fn pa_context_get_sink_info_list(
+    c: *mut pa_context,
+    cb: pa_sink_info_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_get_sink_info_list)(c, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
 
-    pub fn pa_context_get_module_info(c: *mut pa_context, idx: u32, cb: pa_module_info_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_get_module_info_list(c: *mut pa_context, cb: pa_module_info_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_load_module(c: *mut pa_context, name: *const c_char, argument: *const c_char, cb: pa_context_index_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_unload_module(c: *mut pa_context, idx: u32, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
+pub unsafe fn pa_context_set_sink_volume_by_index(
+    c: *mut pa_context,
+    idx: u32,
+    volume: *const pa_cvolume,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_set_sink_volume_by_index)(c, idx, volume, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
 
-    #[cfg(any(doc, feature = "pa_v15"))]
-    #[cfg_attr(docsrs, doc(cfg(feature = "pa_v15")))]
-    pub fn pa_context_send_message_to_object(c: *mut pa_context, recipient_name: *const c_char, message: *const c_char, message_parameters: *const c_char, cb: pa_context_string_cb_t, userdata: *mut c_void) -> *mut pa_operation;
+pub unsafe fn pa_context_set_sink_volume_by_name(
+    c: *mut pa_context,
+    name: *const c_char,
+    volume: *const pa_cvolume,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_set_sink_volume_by_name)(c, name, volume, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
 
-    pub fn pa_context_get_client_info(c: *mut pa_context, idx: u32, cb: pa_client_info_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_get_client_info_list(c: *mut pa_context, cb: pa_client_info_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_kill_client(c: *mut pa_context, idx: u32, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
+pub unsafe fn pa_context_set_sink_mute_by_index(
+    c: *mut pa_context,
+    idx: u32,
+    mute: i32,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_set_sink_mute_by_index)(c, idx, mute, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
 
-    pub fn pa_context_get_card_info_by_index(c: *mut pa_context, idx: u32, cb: pa_card_info_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_get_card_info_by_name(c: *mut pa_context, name: *const c_char, cb: pa_card_info_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_get_card_info_list(c: *mut pa_context, cb: pa_card_info_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_set_card_profile_by_index(c: *mut pa_context, idx: u32, profile: *const c_char, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_set_card_profile_by_name(c: *mut pa_context, name: *const c_char, profile: *const c_char, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_set_port_latency_offset(c: *mut pa_context, card_name: *const c_char, port_name: *const c_char, offset: i64, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
+pub unsafe fn pa_context_set_sink_mute_by_name(
+    c: *mut pa_context,
+    name: *const c_char,
+    mute: i32,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_set_sink_mute_by_name)(c, name, mute, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
 
-    pub fn pa_context_get_sink_input_info(c: *mut pa_context, idx: u32, cb: pa_sink_input_info_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_get_sink_input_info_list(c: *mut pa_context, cb: pa_sink_input_info_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_move_sink_input_by_name(c: *mut pa_context, idx: u32, sink_name: *const c_char, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_move_sink_input_by_index(c: *mut pa_context, idx: u32, sink_idx: u32, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_set_sink_input_volume(c: *mut pa_context, idx: u32, volume: *const pa_cvolume, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_set_sink_input_mute(c: *mut pa_context, idx: u32, mute: i32, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_kill_sink_input(c: *mut pa_context, idx: u32, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
+pub unsafe fn pa_context_suspend_sink_by_name(
+    c: *mut pa_context,
+    sink_name: *const c_char,
+    suspend: i32,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_suspend_sink_by_name)(c, sink_name, suspend, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
 
-    pub fn pa_context_get_source_output_info(c: *mut pa_context, idx: u32, cb: pa_source_output_info_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_get_source_output_info_list(c: *mut pa_context, cb: pa_source_output_info_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_move_source_output_by_name(c: *mut pa_context, idx: u32, source_name: *const c_char, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_move_source_output_by_index(c: *mut pa_context, idx: u32, source_idx: u32, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_set_source_output_volume(c: *mut pa_context, idx: u32, volume: *const pa_cvolume, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_set_source_output_mute(c: *mut pa_context, idx: u32, mute: i32, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_kill_source_output(c: *mut pa_context, idx: u32, cb: pa_context_success_cb_t, userdata: *mut c_void) -> *mut pa_operation;
+pub unsafe fn pa_context_suspend_sink_by_index(
+    c: *mut pa_context,
+    idx: u32,
+    suspend: i32,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_suspend_sink_by_index)(c, idx, suspend, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
 
-    pub fn pa_context_stat(c: *mut pa_context, cb: pa_stat_info_cb_t, userdata: *mut c_void) -> *mut pa_operation;
+pub unsafe fn pa_context_set_sink_port_by_index(
+    c: *mut pa_context,
+    idx: u32,
+    port: *const c_char,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_set_sink_port_by_index)(c, idx, port, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
 
-    pub fn pa_context_get_sample_info_by_name(c: *mut pa_context, name: *const c_char, cb: pa_sample_info_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_get_sample_info_by_index(c: *mut pa_context, idx: u32, cb: pa_sample_info_cb_t, userdata: *mut c_void) -> *mut pa_operation;
-    pub fn pa_context_get_sample_info_list(c: *mut pa_context, cb: pa_sample_info_cb_t, userdata: *mut c_void) -> *mut pa_operation;
+pub unsafe fn pa_context_set_sink_port_by_name(
+    c: *mut pa_context,
+    name: *const c_char,
+    port: *const c_char,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_set_sink_port_by_name)(c, name, port, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_get_source_info_by_name(
+    c: *mut pa_context,
+    name: *const c_char,
+    cb: pa_source_info_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_get_source_info_by_name)(c, name, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_get_source_info_by_index(
+    c: *mut pa_context,
+    idx: u32,
+    cb: pa_source_info_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_get_source_info_by_index)(c, idx, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_get_source_info_list(
+    c: *mut pa_context,
+    cb: pa_source_info_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_get_source_info_list)(c, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_set_source_volume_by_index(
+    c: *mut pa_context,
+    idx: u32,
+    volume: *const pa_cvolume,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_set_source_volume_by_index)(c, idx, volume, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_set_source_volume_by_name(
+    c: *mut pa_context,
+    name: *const c_char,
+    volume: *const pa_cvolume,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_set_source_volume_by_name)(c, name, volume, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_set_source_mute_by_index(
+    c: *mut pa_context,
+    idx: u32,
+    mute: i32,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_set_source_mute_by_index)(c, idx, mute, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_set_source_mute_by_name(
+    c: *mut pa_context,
+    name: *const c_char,
+    mute: i32,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_set_source_mute_by_name)(c, name, mute, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_suspend_source_by_name(
+    c: *mut pa_context,
+    source_name: *const c_char,
+    suspend: i32,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_suspend_source_by_name)(c, source_name, suspend, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_suspend_source_by_index(
+    c: *mut pa_context,
+    idx: u32,
+    suspend: i32,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_suspend_source_by_index)(c, idx, suspend, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_set_source_port_by_index(
+    c: *mut pa_context,
+    idx: u32,
+    port: *const c_char,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_set_source_port_by_index)(c, idx, port, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_set_source_port_by_name(
+    c: *mut pa_context,
+    name: *const c_char,
+    port: *const c_char,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_set_source_port_by_name)(c, name, port, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_get_server_info(
+    c: *mut pa_context,
+    cb: pa_server_info_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_get_server_info)(c, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_get_module_info(
+    c: *mut pa_context,
+    idx: u32,
+    cb: pa_module_info_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_get_module_info)(c, idx, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_get_module_info_list(
+    c: *mut pa_context,
+    cb: pa_module_info_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_get_module_info_list)(c, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_load_module(
+    c: *mut pa_context,
+    name: *const c_char,
+    argument: *const c_char,
+    cb: pa_context_index_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_load_module)(c, name, argument, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_unload_module(
+    c: *mut pa_context,
+    idx: u32,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_unload_module)(c, idx, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+#[cfg(any(doc, feature = "pa_v15"))]
+#[cfg_attr(docsrs, doc(cfg(feature = "pa_v15")))]
+pub unsafe fn pa_context_send_message_to_object(
+    c: *mut pa_context,
+    recipient_name: *const c_char,
+    message: *const c_char,
+    message_parameters: *const c_char,
+    cb: pa_context_string_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_send_message_to_object)(
+            c,
+            recipient_name,
+            message,
+            message_parameters,
+            cb,
+            userdata,
+        )
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_get_client_info(
+    c: *mut pa_context,
+    idx: u32,
+    cb: pa_client_info_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_get_client_info)(c, idx, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_get_client_info_list(
+    c: *mut pa_context,
+    cb: pa_client_info_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_get_client_info_list)(c, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_kill_client(
+    c: *mut pa_context,
+    idx: u32,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_kill_client)(c, idx, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_get_card_info_by_index(
+    c: *mut pa_context,
+    idx: u32,
+    cb: pa_card_info_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_get_card_info_by_index)(c, idx, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_get_card_info_by_name(
+    c: *mut pa_context,
+    name: *const c_char,
+    cb: pa_card_info_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_get_card_info_by_name)(c, name, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_get_card_info_list(
+    c: *mut pa_context,
+    cb: pa_card_info_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_get_card_info_list)(c, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_set_card_profile_by_index(
+    c: *mut pa_context,
+    idx: u32,
+    profile: *const c_char,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_set_card_profile_by_index)(c, idx, profile, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_set_card_profile_by_name(
+    c: *mut pa_context,
+    name: *const c_char,
+    profile: *const c_char,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_set_card_profile_by_name)(c, name, profile, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_set_port_latency_offset(
+    c: *mut pa_context,
+    card_name: *const c_char,
+    port_name: *const c_char,
+    offset: i64,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_set_port_latency_offset)(
+            c, card_name, port_name, offset, cb, userdata,
+        )
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_get_sink_input_info(
+    c: *mut pa_context,
+    idx: u32,
+    cb: pa_sink_input_info_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_get_sink_input_info)(c, idx, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_get_sink_input_info_list(
+    c: *mut pa_context,
+    cb: pa_sink_input_info_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_get_sink_input_info_list)(c, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_move_sink_input_by_name(
+    c: *mut pa_context,
+    idx: u32,
+    sink_name: *const c_char,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_move_sink_input_by_name)(c, idx, sink_name, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_move_sink_input_by_index(
+    c: *mut pa_context,
+    idx: u32,
+    sink_idx: u32,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_move_sink_input_by_index)(c, idx, sink_idx, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_set_sink_input_volume(
+    c: *mut pa_context,
+    idx: u32,
+    volume: *const pa_cvolume,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_set_sink_input_volume)(c, idx, volume, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_set_sink_input_mute(
+    c: *mut pa_context,
+    idx: u32,
+    mute: i32,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_set_sink_input_mute)(c, idx, mute, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_kill_sink_input(
+    c: *mut pa_context,
+    idx: u32,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_kill_sink_input)(c, idx, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_get_source_output_info(
+    c: *mut pa_context,
+    idx: u32,
+    cb: pa_source_output_info_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_get_source_output_info)(c, idx, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_get_source_output_info_list(
+    c: *mut pa_context,
+    cb: pa_source_output_info_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_get_source_output_info_list)(c, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_move_source_output_by_name(
+    c: *mut pa_context,
+    idx: u32,
+    source_name: *const c_char,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_move_source_output_by_name)(c, idx, source_name, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_move_source_output_by_index(
+    c: *mut pa_context,
+    idx: u32,
+    source_idx: u32,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_move_source_output_by_index)(c, idx, source_idx, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_set_source_output_volume(
+    c: *mut pa_context,
+    idx: u32,
+    volume: *const pa_cvolume,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_set_source_output_volume)(c, idx, volume, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_set_source_output_mute(
+    c: *mut pa_context,
+    idx: u32,
+    mute: i32,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_set_source_output_mute)(c, idx, mute, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_kill_source_output(
+    c: *mut pa_context,
+    idx: u32,
+    cb: pa_context_success_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_kill_source_output)(c, idx, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_stat(
+    c: *mut pa_context,
+    cb: pa_stat_info_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_stat)(c, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_get_sample_info_by_name(
+    c: *mut pa_context,
+    name: *const c_char,
+    cb: pa_sample_info_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_get_sample_info_by_name)(c, name, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_get_sample_info_by_index(
+    c: *mut pa_context,
+    idx: u32,
+    cb: pa_sample_info_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_get_sample_info_by_index)(c, idx, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_context_get_sample_info_list(
+    c: *mut pa_context,
+    cb: pa_sample_info_cb_t,
+    userdata: *mut c_void,
+) -> *mut pa_operation {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_context_get_sample_info_list)(c, cb, userdata)
+    } else {
+        std::ptr::null_mut()
+    }
 }

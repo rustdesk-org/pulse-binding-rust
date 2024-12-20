@@ -13,6 +13,7 @@
 
 //! Memory allocation functions.
 
+use crate::ffi;
 use std::os::raw::{c_char, c_void};
 
 /// Allocates `n` new structures of the specified type.
@@ -43,27 +44,56 @@ pub unsafe fn pa_xrenew(p: *mut c_void, n: usize, k: usize) -> *mut c_void {
     pa_xrealloc(p, n * k)
 }
 
-#[link(name = "pulse")]
-extern "C" {
-    /// Allocates the specified number of bytes, just like `malloc()` does.
-    /// However, in case of OOM, terminate.
-    pub fn pa_xmalloc(l: usize) -> *mut c_void;
+pub unsafe fn pa_xmalloc(size: usize) -> *mut c_void {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_xmalloc)(size)
+    } else {
+        std::ptr::null_mut()
+    }
+}
 
-    /// Same as [`pa_xmalloc()`] , but initializes allocated memory to 0.
-    pub fn pa_xmalloc0(l: usize) -> *mut c_void;
+pub unsafe fn pa_xmalloc0(size: usize) -> *mut c_void {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_xmalloc0)(size)
+    } else {
+        std::ptr::null_mut()
+    }
+}
 
-    ///  The combination of [`pa_xmalloc()`] and `realloc()`.
-    pub fn pa_xrealloc(ptr: *mut c_void, size: usize) -> *mut c_void;
+pub unsafe fn pa_xfree(ptr: *mut c_void) {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_xfree)(ptr)
+    }
+}
 
-    /// Frees allocated memory.
-    pub fn pa_xfree(p: *mut c_void);
+pub unsafe fn pa_xrealloc(ptr: *mut c_void, size: usize) -> *mut c_void {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_xrealloc)(ptr, size)
+    } else {
+        std::ptr::null_mut()
+    }
+}
 
-    /// Duplicates the specified string, allocating memory with [`pa_xmalloc()`].
-    pub fn pa_xstrdup(s: *const c_char) -> *mut c_char;
+pub unsafe fn pa_xstrdup(s: *const c_char) -> *mut c_char {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_xstrdup)(s)
+    } else {
+        std::ptr::null_mut()
+    }
+}
 
-    /// Duplicates the specified string, but truncate after `l` characters.
-    pub fn pa_xstrndup(s: *const c_char, l: usize) -> *mut c_char;
+pub unsafe fn pa_xstrndup(s: *const c_char, l: usize) -> *mut c_char {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_xstrndup)(s, l)
+    } else {
+        std::ptr::null_mut()
+    }
+}
 
-    /// Duplicates the specified memory block.
-    pub fn pa_xmemdup(p: *const c_void, l: usize) -> *mut c_void;
+pub unsafe fn pa_xmemdup(p: *const c_void, l: usize) -> *mut c_void {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_xmemdup)(p, l)
+    } else {
+        std::ptr::null_mut()
+    }
 }

@@ -13,16 +13,18 @@
 
 //! Asynchronous operations.
 
-use std::os::raw::c_void;
 use num_derive::{FromPrimitive, ToPrimitive};
+use std::os::raw::c_void;
 
 /// An asynchronous operation object.
-#[repr(C)] pub struct pa_operation { _private: [u8; 0] }
+#[repr(C)]
+pub struct pa_operation {
+    _private: [u8; 0],
+}
 
 /// Operation state.
 #[repr(C)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-#[derive(FromPrimitive, ToPrimitive)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, FromPrimitive, ToPrimitive)]
 pub enum pa_operation_state_t {
     /// The operation is still running.
     Running,
@@ -33,21 +35,49 @@ pub enum pa_operation_state_t {
     Cancelled,
 }
 
-pub const PA_OPERATION_RUNNING:   pa_operation_state_t = pa_operation_state_t::Running;
-pub const PA_OPERATION_DONE:      pa_operation_state_t = pa_operation_state_t::Done;
-pub const PA_OPERATION_CANCELED:  pa_operation_state_t = pa_operation_state_t::Cancelled;
+pub const PA_OPERATION_RUNNING: pa_operation_state_t = pa_operation_state_t::Running;
+pub const PA_OPERATION_DONE: pa_operation_state_t = pa_operation_state_t::Done;
+pub const PA_OPERATION_CANCELED: pa_operation_state_t = pa_operation_state_t::Cancelled;
 pub const PA_OPERATION_CANCELLED: pa_operation_state_t = pa_operation_state_t::Cancelled;
 
 /// A callback for operation state changes.
 #[rustfmt::skip]
 pub type pa_operation_notify_cb_t = Option<extern "C" fn(o: *mut pa_operation, userdata: *mut c_void)>;
 
-#[rustfmt::skip]
-#[link(name = "pulse")]
-extern "C" {
-    pub fn pa_operation_ref(o: *mut pa_operation) -> *mut pa_operation;
-    pub fn pa_operation_unref(o: *mut pa_operation);
-    pub fn pa_operation_cancel(o: *mut pa_operation);
-    pub fn pa_operation_get_state(o: *const pa_operation) -> pa_operation_state_t;
-    pub fn pa_operation_set_state_callback(o: *mut pa_operation, cb: pa_operation_notify_cb_t, userdata: *mut c_void);
+pub unsafe fn pa_operation_ref(o: *mut pa_operation) -> *mut pa_operation {
+    if let Some(functions) = crate::ffi::get_functions() {
+        (functions.pa_operation_ref)(o)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
+pub unsafe fn pa_operation_unref(o: *mut pa_operation) {
+    if let Some(functions) = crate::ffi::get_functions() {
+        (functions.pa_operation_unref)(o)
+    }
+}
+
+pub unsafe fn pa_operation_cancel(o: *mut pa_operation) {
+    if let Some(functions) = crate::ffi::get_functions() {
+        (functions.pa_operation_cancel)(o)
+    }
+}
+
+pub unsafe fn pa_operation_get_state(o: *const pa_operation) -> pa_operation_state_t {
+    if let Some(functions) = crate::ffi::get_functions() {
+        (functions.pa_operation_get_state)(o)
+    } else {
+        pa_operation_state_t::Cancelled
+    }
+}
+
+pub unsafe fn pa_operation_set_state_callback(
+    o: *mut pa_operation,
+    cb: pa_operation_notify_cb_t,
+    userdata: *mut c_void,
+) {
+    if let Some(functions) = crate::ffi::get_functions() {
+        (functions.pa_operation_set_state_callback)(o, cb, userdata)
+    }
 }

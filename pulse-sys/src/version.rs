@@ -46,6 +46,7 @@
 //! of support offered. If you have v8 compatibility enabled but not v12, then the version number
 //! indicated will be v11.
 
+use crate::ffi;
 use std::os::raw::c_char;
 
 /// PulseAudio version compatibility.
@@ -175,7 +176,10 @@ pub const fn pa_check_version(major: u8, minor: u8, _micro: u8) -> bool {
     (TARGET_VERSION.0 > major) || ((TARGET_VERSION.0 == major) && (TARGET_VERSION.1 > minor))
 }
 
-#[link(name = "pulse")]
-extern "C" {
-    pub fn pa_get_library_version() -> *const c_char;
+pub unsafe fn pa_get_library_version() -> *const c_char {
+    if let Some(functions) = ffi::get_functions() {
+        (functions.pa_get_library_version)()
+    } else {
+        std::ptr::null()
+    }
 }
